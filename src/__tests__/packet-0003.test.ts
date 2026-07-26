@@ -15,11 +15,10 @@ import type {
   DeductionBreakdownItem,
 } from '@/lib/types';
 
-// TODO: Coder가 작성할 함수들
-// import {
-//   calcTax,
-//   checkGlobalFiling,
-// } from '@/lib/calc';
+import {
+  calcTax,
+  checkGlobalFiling,
+} from '@/lib/calc';
 
 describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
   beforeEach(() => {
@@ -38,7 +37,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
   // ============================================================================
   describe('AC-1: calcTax returns valid TaxResult with integer refundAmount and constraints', () => {
     it('AC-1.1: should calculate tax for single-income employee with basic deductions', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-001',
@@ -73,7 +72,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-1.2: refundAmount must be an integer', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-002',
@@ -102,7 +101,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-1.3: taxableIncome must be <= annualSalary', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-003',
@@ -131,7 +130,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-1.4: breakdown should have 6 items, each with usedRatio in [0, 1]', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-004',
@@ -175,7 +174,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-1.5: breakdown keys should correspond to Deductions fields', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-005',
@@ -209,7 +208,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-1.6: calculatedTax must be >= 0', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-006',
@@ -238,7 +237,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-1.7: prepaidTax must be >= 0', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-007',
@@ -272,7 +271,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
   // ============================================================================
   describe('AC-2: NaN defense — invalid calculations result in 0, no console.error', () => {
     it('AC-2.1: should return 0 for computed NaN fields, never log console.error', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       // Edge case: 0 salary with complex deductions
       const profile: TaxProfile = {
@@ -315,7 +314,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-2.2: breakdown items should never contain NaN usedRatio or appliedAmount', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-nan-002',
@@ -351,7 +350,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-2.3: computedAt should always be a valid timestamp, not NaN', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-nan-003',
@@ -390,7 +389,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
   // ============================================================================
   describe('AC-3: checkGlobalFiling returns correct boolean for filing requirement', () => {
     it('AC-3.1: freelancer with freelanceIncome > 0 should require global filing', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-001',
@@ -409,7 +408,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-3.2: single-income employee should NOT require global filing', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-002',
@@ -428,7 +427,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-3.3: multi-income with freelanceIncome > 3,000,000 should require global filing', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-003',
@@ -446,7 +445,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-3.4: multi-income with freelanceIncome <= 3,000,000 should NOT require global filing', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-004',
@@ -464,7 +463,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-3.5: multi-income with freelanceIncome exactly 3,000,000 should NOT require global filing', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-005',
@@ -482,7 +481,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-3.6: multi-income with freelanceIncome > 3,000,000 should require global filing (boundary)', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-006',
@@ -500,7 +499,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('AC-3.7: freelancer with 0 freelanceIncome should still require global filing if incomeType is freelancer', () => {
-      const { checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-gf-007',
@@ -524,7 +523,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
   // ============================================================================
   describe('INTEGRATION: TaxResult.needsGlobalFiling aligns with checkGlobalFiling', () => {
     it('should have consistent needsGlobalFiling between calcTax and checkGlobalFiling', () => {
-      const { calcTax, checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-int-001',
@@ -554,7 +553,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('should have consistent needsGlobalFiling for employee with no other income', () => {
-      const { calcTax, checkGlobalFiling } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-int-002',
@@ -588,7 +587,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
   // ============================================================================
   describe('Edge cases and validation', () => {
     it('should handle zero salary and zero freelance income', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-edge-001',
@@ -617,7 +616,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('should handle maximum valid salary (100M)', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-edge-002',
@@ -646,7 +645,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('should handle deductions exceeding reasonable limits', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-edge-003',
@@ -675,7 +674,7 @@ describe('Packet-0003: 계산 엔진 (calcTax + checkGlobalFiling)', () => {
     });
 
     it('should always return breakdown with exactly 6 items', () => {
-      const { calcTax } = require('@/lib/calc');
+
 
       const profile: TaxProfile = {
         id: 'profile-edge-004',
