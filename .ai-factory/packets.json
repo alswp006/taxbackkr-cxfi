@@ -1,0 +1,563 @@
+[
+  {
+    "id": "0001",
+    "title": "TypeScript 타입 & 상수 테이블",
+    "epic": "Epic 1: Data Layer",
+    "task": {
+      "description": "SPEC의 모든 엔티티 타입(IncomeType, TaxProfile, Deductions, DeductionBreakdownItem, TaxResult, ChecklistKey, ChecklistItem, ChecklistState, SavedRecord, AppMeta)과 페이지 계약 RouteState를 순수 타입으로 정의한다. 이어 2025 귀속연도 기준 과세표준 구간·세율, 공제 항목별 한도(각 1억 상한), 체크리스트 6항목 기본값, 항목별 절세 팁 상수 테이블을 정의한다. 런타임 로직·HEX 색상 없음.",
+      "acceptance_criteria": [
+        "src/lib/types.ts가 10개 타입 + RouteState(모든 라우트 state undefined)를 export하고 tsc --noEmit 통과",
+        "각 필드에 SPEC 제약(단위·범위) JSDoc 주석 포함",
+        "src/lib/constants.ts가 TAX_BRACKETS, DEDUCTION_LIMITS(keyof Deductions별, 각 상한 ≤ 100000000), CHECKLIST_DEFAULTS(6개), DEDUCTION_TIPS export"
+      ]
+    },
+    "covers": [
+      "F1-AC1",
+      "F4-AC7",
+      "F6-AC6",
+      "F7-AC1"
+    ],
+    "files": [
+      "src/lib/types.ts",
+      "src/lib/constants.ts"
+    ],
+    "definition_of_done": [
+      "tsc --noEmit 통과, 앱 컴파일 유지",
+      "RouteState 타입: {\"/\":undefined; \"/result\":undefined; \"/analysis\":undefined; \"/simulate\":undefined; \"/checklist\":undefined; \"/records\":undefined}",
+      "DEDUCTION_LIMITS 각 상한 ≤ 100000000, CHECKLIST_DEFAULTS totalCount=6"
+    ],
+    "depends_on": [],
+    "db_schema": "interface TaxProfile { id:string; taxYear:number; incomeType:IncomeType; annualSalary:number; freelanceIncome:number; dependents:number; updatedAt:number } → 순수 타입, localStorage 키는 storage.ts에서 관리",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": ""
+  },
+  {
+    "id": "0002",
+    "title": "localStorage CRUD 헬퍼",
+    "epic": "Epic 1: Data Layer",
+    "task": {
+      "description": "taxback: 프리픽스 5키(profile/deductions/checklist/records/meta)의 read/write/기본값 fallback/QuotaExceeded 방어를 담당하는 순수 함수 계층. 템플릿 localStorage 헬퍼 위에서 동작하며, 손상 JSON 시 예외 없이 기본값을 반환하고 records는 최대 5개를 유지한다.",
+      "acceptance_criteria": [
+        "getProfile/saveProfile, getDeductions/saveDeductions, getChecklist/saveChecklist, getRecords/saveRecord, getMeta/saveMeta export",
+        "saveProfile: annualSalary<0 또는 dependents>10이면 저장 안 하고 false 반환",
+        "saveRecord: 6번째 저장 시 savedAt 최소 레코드 제거 후 최대 5개 유지; QuotaExceededError면 false 반환·크래시 없음",
+        "손상 JSON(\"{invalid\") 시 예외 없이 기본값 반환, console.error 미출력; 키 부재 시 getRecords()는 []"
+      ]
+    },
+    "covers": [
+      "F1-AC2",
+      "F1-AC3",
+      "F1-AC4",
+      "F1-AC5",
+      "F1-AC6",
+      "F1-AC7"
+    ],
+    "files": [
+      "src/lib/storage.ts"
+    ],
+    "definition_of_done": [
+      "5키 CRUD 함수 전부 export, tsc --noEmit 통과",
+      "getMeta()는 seasonBannerDismissedYear:null 기본값 포함, saveMeta 부분 병합 지원",
+      "QuotaExceeded/손상 JSON 시 앱 크래시·console.error 미발생"
+    ],
+    "depends_on": [
+      "0001"
+    ],
+    "db_schema": "localStorage 키: taxback:profile, taxback:deductions, taxback:checklist, taxback:records(SavedRecord[] 최대 5), taxback:meta",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": ""
+  },
+  {
+    "id": "0003",
+    "title": "계산 엔진 (calcTax + checkGlobalFiling)",
+    "epic": "Epic 1: Data Layer",
+    "task": {
+      "description": "TaxProfile+Deductions→TaxResult를 산출하는 순수 함수와 종합소득세 대상 판정 함수. 과세표준·산출세액·환급/추가납부액을 룰 기반으로 계산하고 6항목 breakdown을 생성한다. NaN 방어를 계산 단에서 원천 차단한다.",
+      "acceptance_criteria": [
+        "calcTax(profile, deductions): TaxResult — refundAmount 정수(원), taxableIncome <= annualSalary 성립, 6항목 breakdown(각 usedRatio 0~1) 생성",
+        "내부 NaN 감지 시 해당 값 0 보정·console.error 미출력",
+        "checkGlobalFiling(profile): boolean — freelancer(freelanceIncome>0)→true; employee 단일소득→false; multi & 기타소득 300만원 초과→true; TaxResult.needsGlobalFiling 반영"
+      ]
+    },
+    "covers": [
+      "F3-AC1",
+      "F3-AC7",
+      "F6-AC1",
+      "F6-AC2",
+      "F6-AC3"
+    ],
+    "files": [
+      "src/lib/calc.ts"
+    ],
+    "definition_of_done": [
+      "calcTax·checkGlobalFiling·판정 근거 문자열 함수 export",
+      "단위 테스트 3케이스(F3-AC1/F6-AC1/F6-AC2) 통과",
+      "tsc --noEmit 통과, 컴파일 유지"
+    ],
+    "depends_on": [
+      "0001"
+    ],
+    "db_schema": "interface TaxResult { taxableIncome:number; calculatedTax:number; prepaidTax:number; refundAmount:number; breakdown:DeductionBreakdownItem[]; needsGlobalFiling:boolean; computedAt:number }",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": ""
+  },
+  {
+    "id": "0004",
+    "title": "체크리스트 파생 로직",
+    "epic": "Epic 1: Data Layer",
+    "task": {
+      "description": "Deductions에서 ChecklistState를 파생/재계산하는 순수 함수. 저장값을 신뢰하지 않고 실제 done 개수로 achievedCount를 재산출한다. 항상 6항목·totalCount===6을 보장하며 currentAmount >= targetAmount면 done:true로 반영한다.",
+      "acceptance_criteria": [
+        "deriveChecklist(deductions, storedChecklist?): ChecklistState — 항상 6항목·totalCount===6",
+        "currentAmount >= targetAmount면 done:true, achievedCount에 반영",
+        "저장된 achievedCount가 실제 done 개수와 불일치 시 실제값으로 재계산"
+      ]
+    },
+    "covers": [
+      "F7-AC1",
+      "F7-AC2",
+      "F7-AC7"
+    ],
+    "files": [
+      "src/lib/checklist.ts"
+    ],
+    "definition_of_done": [
+      "deriveChecklist export, 컴파일 유지",
+      "achievedCount는 항상 실제 done 개수와 일치",
+      "console.error 미발생"
+    ],
+    "depends_on": [
+      "0001",
+      "0003"
+    ],
+    "db_schema": "interface ChecklistState { items:ChecklistItem[]; achievedCount:number; totalCount:6; updatedAt:number }",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": ""
+  },
+  {
+    "id": "0005",
+    "title": "소득·결과 서비스 훅 (useTaxData)",
+    "epic": "Epic 2: Services",
+    "task": {
+      "description": "페이지가 데이터 계층(storage+calc)에 직접 접근하지 않도록 감싸는 React 서비스 훅. 프로필/공제 로드·저장, calcTax 실행, 로딩 상태 관리를 담당한다. Result 화면의 최소 300ms 스켈레톤 타이밍과 NaN 보정을 서비스 단에서 제공한다.",
+      "acceptance_criteria": [
+        "useTaxData()가 { profile, deductions, result, loading, saveProfile, saveDeductions, recompute } 반환",
+        "recompute 호출 시 calcTax 결과를 상태로 노출, 최소 300ms loading true 유지 후 false",
+        "saveProfile 실패(false) 시 훅이 에러 플래그를 노출해 호출부가 Toast 표시 가능"
+      ]
+    },
+    "covers": [
+      "F3-AC6",
+      "F3-AC7",
+      "F2-AC7"
+    ],
+    "files": [
+      "src/hooks/useTaxData.ts"
+    ],
+    "definition_of_done": [
+      "storage.ts·calc.ts만 의존, 컴포넌트 미포함",
+      "tsc --noEmit 통과",
+      "최소 300ms 로딩 타이밍 구현, console.error 미발생"
+    ],
+    "depends_on": [
+      "0002",
+      "0003"
+    ],
+    "db_schema": "",
+    "api_contract": "내부 서비스 레이어 — 외부 네트워크 없음. storage getter/setter + calcTax를 조합해 UI에 상태 제공",
+    "dependencies": [],
+    "ui_requirements": ""
+  },
+  {
+    "id": "0006",
+    "title": "체크리스트·기록 서비스 훅",
+    "epic": "Epic 2: Services",
+    "task": {
+      "description": "체크리스트 파생 상태와 연도별 기록(SavedRecord) 저장/조회를 감싸는 React 서비스 훅. deriveChecklist·saveRecord·getRecords를 조합해 페이지에 상태를 제공하고, QuotaExceeded 시 실패 플래그를 노출한다. AppMeta 시즌 배너 플래그 접근도 제공한다.",
+      "acceptance_criteria": [
+        "useChecklistData()가 { checklist, refresh } 반환, deriveChecklist 기반 6항목·achievedCount 노출",
+        "useRecords()가 { records, save } 반환, save 성공 시 records 갱신·QuotaExceeded 시 { ok:false } 반환",
+        "useAppMeta()가 seasonBannerDismissedYear 읽기/쓰기 제공"
+      ]
+    },
+    "covers": [
+      "F7-AC1",
+      "F7-AC2",
+      "F1-AC3",
+      "F1-AC5",
+      "F8-AC4"
+    ],
+    "files": [
+      "src/hooks/useChecklistData.ts",
+      "src/hooks/useRecords.ts"
+    ],
+    "definition_of_done": [
+      "storage.ts·checklist.ts만 의존, tsc --noEmit 통과",
+      "save 실패 시 호출부가 Toast \"저장 공간이 부족해요\" 표시 가능",
+      "console.error 미발생"
+    ],
+    "depends_on": [
+      "0002",
+      "0004"
+    ],
+    "db_schema": "",
+    "api_contract": "내부 서비스 레이어 — 외부 네트워크 없음. localStorage records/checklist/meta 접근 캡슐화",
+    "dependencies": [],
+    "ui_requirements": ""
+  },
+  {
+    "id": "0007",
+    "title": "시즌 배너 자립형 컴포넌트",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "세금 시즌(1~5월) 배너를 props 없는 자립형 컴포넌트로 구현한다. 컴포넌트 내부에서 AppMeta를 읽어 노출 여부를 판단하고, 닫기 시 seasonBannerDismissedYear로 연 1회 재노출을 제어한다. Home보다 먼저 완성되어 phantom import를 차단한다.",
+      "acceptance_criteria": [
+        "현재 월 1~5월이고 getMeta().seasonBannerDismissedYear !== 현재연도일 때만 \"지금은 연말정산·종소세 시즌이에요\" ListRow 배너 렌더, 그 외 null 반환",
+        "닫기 버튼 탭 시 saveMeta로 현재연도 저장→즉시 숨김·같은 해 재노출 안 함",
+        "닫기 아이콘 ≥44px, HEX 하드코딩 없음(var(--tds-color-*)/TDS만)"
+      ]
+    },
+    "covers": [
+      "F8-AC3",
+      "F8-AC4"
+    ],
+    "files": [
+      "src/components/SeasonBanner.tsx"
+    ],
+    "definition_of_done": [
+      "props 없이 자체 노출 판단, 단독 렌더 시 tsc --noEmit 통과",
+      "console.error 미발생",
+      "이 파일은 본 Task만 소유(다른 Task 미수정)"
+    ],
+    "depends_on": [
+      "0006"
+    ],
+    "db_schema": "",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": "TDS ListRow(배너), Button/닫기 아이콘, Spacing. 1~5월 & 미닫힘 연도일 때만 \"지금은 연말정산·종소세 시즌이에요\" 렌더, 우측 닫기 아이콘(≥44px). 닫으면 즉시 null. HEX 금지, var(--tds-color-*)만."
+  },
+  {
+    "id": "0008",
+    "title": "홈 / 소득 입력 페이지 (`/`)",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "소득유형 Chip(직장인/프리랜서/N잡)과 총급여·사업소득·부양가족 입력 폼. 유효성 검사 후 TaxProfile 저장 및 /result 이동. 저장 프로필 프리필. 상단에 SeasonBanner를 import해 배치만 한다(배너 로직은 컴포넌트 내부).",
+      "acceptance_criteria": [
+        "직장인 선택+{annualSalary:50000000, dependents:1} 제출 → saveProfile 후 navigate('/result'); 프리랜서 선택+{freelanceIncome:30000000} → incomeType:\"freelancer\" 저장·이동",
+        "직장인 annualSalary:0 제출 → TextField 하단 \"총급여를 입력해주세요\", 이동 안 함; 100억 초과 → \"총급여는 100억원 이하로 입력해주세요\"",
+        "inputMode=\"numeric\" 비숫자 미반영; 프리랜서 동안 총급여 숨김·사업소득 표시; 저장 profile 프리필; window.location.href/window.open 부재"
+      ]
+    },
+    "covers": [
+      "F2-AC1",
+      "F2-AC2",
+      "F2-AC3",
+      "F2-AC4",
+      "F2-AC5",
+      "F2-AC6",
+      "F2-AC7",
+      "F2-AC8"
+    ],
+    "files": [
+      "src/pages/Home.tsx"
+    ],
+    "definition_of_done": [
+      "ScreenScaffold+Top+상단 <SeasonBanner />(정상 import)+하단 고정 Button, Chip·버튼 ≥44px, FloatingTabBar 포함",
+      "주요 CTA에 generateHapticFeedback success, Chip에 tickWeak",
+      "외부 이탈 코드 부재, tsc --noEmit 통과"
+    ],
+    "depends_on": [
+      "0005",
+      "0007"
+    ],
+    "db_schema": "TaxProfile → localStorage 키 taxback:profile",
+    "api_contract": "",
+    "dependencies": [
+      "@apps-in-toss/web-framework"
+    ],
+    "ui_requirements": "Pattern: FixedBottomCTA. TDS: Top, Paragraph, Chip, TextField(variant=box, inputMode=numeric), Spacing, Button, Toast, FloatingTabBar(템플릿), SubmitFooter(템플릿). Layout: <Top title=세금 환급 계산/> → 상단 <SeasonBanner/> → Paragraph.Text t4 \"소득 유형을 골라주세요\" → Chip 3개(직장인 selected/프리랜서/N잡, flex gap8 overflowX auto) → incomeType==='employee'|'multi'면 총급여 TextField, 'freelancer'면 사업소득 TextField(F2-AC6) → 부양가족 수 TextField → Spacing 80 → SubmitFooter Button(fill/large/primary \"환급액 계산\"). States: Loading=프리필 복원 중 Skeleton 2줄; Error=TextField hasError+help \"총급여를 입력해주세요\"/\"총급여는 100억원 이하로 입력해주세요\". Interactions: Chip 탭→incomeType 전환+필드 전환 haptic tickWeak; 숫자 외 차단; 계산 탭→유효성 통과 시 saveProfile→navigate('/result') haptic success, 0/상한초과 시 에러·네비 차단."
+  },
+  {
+    "id": "0009",
+    "title": "결과 페이지 (`/result`) + 종소세 판정",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "calcTax 결과를 SummaryHero+요약 카드로 표시하고 종소세 대상 판정 섹션과 참고 고지, 기록 저장 버튼을 포함한다. refundAmount 부호로 환급/추가납부 라벨을 전환하고 CountUp 애니메이션을 적용한다.",
+      "acceptance_criteria": [
+        "data-testid=\"refund-hero\" SummaryHero 1개 + data-testid=\"summary-card\" Card(과세표준·산출세액·기납부세액 ListRow 3개), refundAmount t2 강조",
+        "refundAmount 부호별 \"예상 환급 N원\" CountUp / 음수 시 \"추가납부 예상\" 라벨 전환",
+        "소득 0 시 EmptyState \"소득을 먼저 입력해주세요\"+\"입력하러 가기\"(→/); \"기록 저장\"→saveRecord+Toast \"올해 기록을 저장했어요\", Quota 초과 시 \"저장 공간이 부족해요\""
+      ]
+    },
+    "covers": [
+      "F3-AC2",
+      "F3-AC3",
+      "F3-AC4",
+      "F3-AC5",
+      "F3-AC6",
+      "F3-AC8",
+      "F6-AC1"
+    ],
+    "files": [
+      "src/pages/Result.tsx"
+    ],
+    "definition_of_done": [
+      "하단 \"실제 신고 결과와 다를 수 있는 참고용 추정치입니다\" 상시 표시",
+      "계산 중 최소 300ms Skeleton 히어로",
+      "ScreenScaffold+FloatingTabBar, HEX 하드코딩 없음, tsc --noEmit 통과"
+    ],
+    "depends_on": [
+      "0005",
+      "0006"
+    ],
+    "db_schema": "SavedRecord → taxback:records (saveRecord)",
+    "api_contract": "",
+    "dependencies": [
+      "@apps-in-toss/web-framework"
+    ],
+    "ui_requirements": "Pattern: StatusPanel. TDS: Top, SummaryHero(템플릿), Amount/CountUp(템플릿), Card, ListRow, Paragraph, Spacing, Button, Skeleton, AdSlot(템플릿), EmptyState(템플릿), Toast. Layout: <Top title=예상 환급 right=Button weak small 기록 저장/> → SummaryHero data-testid=refund-hero label=refund>=0?\"예상 환급\":\"추가납부 예상\" value=<Amount value=abs(refund) unit=원 typography=t2 countUp/> caption=\"실제 신고 결과와 다를 수 있어요\" → Card data-testid=summary-card(ListRow.Texts 2RowTypeA 과세표준/산출세액/기납부세액) → AdSlot adGroupId=env → Button fill large →navigate('/analysis') → Paragraph.Text st13 tertiary \"실제 신고 결과와 다를 수 있는 참고용 추정치입니다\". States: Loading=SummaryHero Skeleton 최소300ms+Card 3줄 Skeleton; Empty=소득0→EmptyState title \"소득을 먼저 입력해주세요\" action Button weak \"입력하러 가기\"→/; Error=\"결과를 불러오지 못했어요\"+Button weak \"다시 계산하기\". Interactions: 진입 시 calcTax NaN→0, CountUp, 기록 저장→saveRecord→Toast position=bottom haptic success, Quota 시 \"저장 공간이 부족해요\"."
+  },
+  {
+    "id": "0010",
+    "title": "절세 상세 분석 페이지 (`/analysis`)",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "공제 6항목 breakdown을 카드+MiniBar로 표시하되 TossRewardAd로 게이팅한다. 광고 미완료 시 블러+잠금 CTA, 완료 시 상세 노출. 공제 입력이 모두 0이면 EmptyState, 광고 실패 시 Toast+게이팅 유지.",
+      "acceptance_criteria": [
+        "TossRewardAd로 감싼 data-testid=\"analysis-card\" Card에 6개 공제 항목 ListRow+MiniBar(usedRatio) 표시, 잠금 시 블러+\"광고 보고 분석 확인\" CTA",
+        "공제 입력 모두 0 → EmptyState \"분석할 공제 내역이 없어요\"+\"공제 입력하기\"",
+        "광고 로드 실패 → Toast \"광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요\"+게이팅 유지"
+      ]
+    },
+    "covers": [
+      "F4-AC2",
+      "F4-AC3",
+      "F4-AC4",
+      "F4-AC6",
+      "F4-AC7"
+    ],
+    "files": [
+      "src/pages/Analysis.tsx"
+    ],
+    "definition_of_done": [
+      "하단 \"참고용 추정치예요\" 표시",
+      "TossRewardAd slotId=env 사용, HEX 하드코딩 없음",
+      "ScreenScaffold+FloatingTabBar, tsc --noEmit 통과"
+    ],
+    "depends_on": [
+      "0005"
+    ],
+    "db_schema": "",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": "Pattern: OverlayPulse(리워드 게이팅). TDS: Top, Card, ListRow, MiniBar(템플릿), Paragraph, Spacing, Button, TossRewardAd(템플릿), Toast, EmptyState(템플릿). Layout: <Top title=절세 상세 분석/> → <TossRewardAd slotId=env> Card data-testid=analysis-card { breakdown.map(item => ListRow contents=ListRow.Texts 2RowTypeA top=item.label bottom=`한도까지 {remain}원 남음` right=<MiniBar ratio=item.usedRatio/>) } </TossRewardAd> → Paragraph.Text st13 tertiary \"참고용 추정치예요\". 잠금 상태: TossRewardAd가 children 블러+중앙 \"광고 보고 분석 확인\" CTA 오버레이. States: Loading=CTA spinner/disabled; Empty=공제 모두 0→EmptyState title \"분석할 공제 내역이 없어요\" action Button weak \"공제 입력하기\"; Error=광고 실패→Toast \"광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요\"+게이팅 유지."
+  },
+  {
+    "id": "0011",
+    "title": "공제 시뮬레이션 페이지 (`/simulate`)",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "공제 항목 슬라이더를 조정하면 실시간으로 calcTax를 재호출해 환급액 히어로에 반영하는 시뮬레이션 화면. 조정값은 Deductions로 저장 가능하다. 변경마다 순수 함수로 재계산해 즉시 반영한다.",
+      "acceptance_criteria": [
+        "슬라이더 변경마다 calcTax 재호출·SummaryHero 환급액 즉시 반영",
+        "각 공제 슬라이더 상한 1억, 초과 입력 거부",
+        "\"이 값으로 저장\" 탭 → saveDeductions 후 Toast \"공제 내역을 저장했어요\""
+      ]
+    },
+    "covers": [
+      "F5-AC1",
+      "F5-AC2",
+      "F5-AC3"
+    ],
+    "files": [
+      "src/pages/Simulate.tsx"
+    ],
+    "definition_of_done": [
+      "슬라이더 조정 시 히어로 실시간 갱신, 300ms 이내 반영",
+      "ScreenScaffold+FloatingTabBar, HEX 하드코딩 없음",
+      "tsc --noEmit 통과, console.error 미발생"
+    ],
+    "depends_on": [
+      "0005"
+    ],
+    "db_schema": "Deductions → taxback:deductions (saveDeductions)",
+    "api_contract": "",
+    "dependencies": [
+      "@apps-in-toss/web-framework"
+    ],
+    "ui_requirements": "Pattern: LiveSimulation. TDS: Top, SummaryHero(템플릿), Amount/CountUp(템플릿), ListRow, Slider/TextField, Spacing, Button, Toast, Paragraph. Layout: <Top title=공제 시뮬레이션/> → 상단 고정 SummaryHero(현재 환급액 Amount 원) → 6개 공제 항목 ListRow+슬라이더(신용카드/의료비/교육비/IRP/보험료/기부금, 상한 1억) → 하단 Button fill large \"이 값으로 저장\" → Paragraph.Text st13 tertiary \"참고용 추정치예요\". Interactions: 슬라이더 변경→calcTax 재호출→히어로 CountUp 즉시 반영 haptic tickWeak; 상한 초과 거부; 저장 탭→saveDeductions→Toast \"공제 내역을 저장했어요\" haptic success. HEX 금지, var(--tds-color-*)만."
+  },
+  {
+    "id": "0012",
+    "title": "절세 체크리스트 페이지 (`/checklist`)",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "deriveChecklist 기반 6항목 절세 체크리스트와 달성도를 표시하는 화면. 각 항목의 currentAmount/targetAmount 진행률과 done 상태, 전체 achievedCount/6를 보여준다. 항목 탭 시 관련 팁을 안내한다.",
+      "acceptance_criteria": [
+        "항상 6항목 ListRow 표시, done 항목은 완료 표시, 상단에 achievedCount/6 달성도",
+        "currentAmount >= targetAmount인 항목만 done:true로 렌더",
+        "항목 탭 시 DEDUCTION_TIPS 문구+\"참고용 정보\" 표시"
+      ]
+    },
+    "covers": [
+      "F7-AC1",
+      "F7-AC2",
+      "F7-AC3"
+    ],
+    "files": [
+      "src/pages/Checklist.tsx"
+    ],
+    "definition_of_done": [
+      "ScreenScaffold+Top+FloatingTabBar, 6항목·totalCount=6 표시",
+      "HEX 하드코딩 없음, 터치 타깃 ≥44px",
+      "tsc --noEmit 통과"
+    ],
+    "depends_on": [
+      "0006"
+    ],
+    "db_schema": "ChecklistState → taxback:checklist",
+    "api_contract": "",
+    "dependencies": [
+      "@apps-in-toss/web-framework"
+    ],
+    "ui_requirements": "Pattern: ProgressChecklist. TDS: Top, ListRow, Chip, Paragraph, Spacing, Button, BottomSheet, Asset.ContentIcon. Layout: <Top title=절세 체크리스트/> → 상단 달성도 Paragraph.Text t3 \"6개 중 N개 달성\" + 진행 Chip → 6개 ListRow(item.label, currentAmount/targetAmount, done이면 우측 완료 아이콘) → 항목 탭 시 BottomSheet에 DEDUCTION_TIPS 문구+\"참고용 정보\". States: 데이터 없으면 기본 6항목 currentAmount 0. Interactions: 항목 탭→BottomSheet 팁 haptic tickWeak. HEX 금지, var(--tds-color-*)/TDS만, Asset.ContentIcon 활용."
+  },
+  {
+    "id": "0013",
+    "title": "기록 & 비교 페이지 (`/records`)",
+    "epic": "Epic 3: UI Pages",
+    "task": {
+      "description": "연도별 저장된 SavedRecord 목록을 표시하고 작년 대비 환급액 증감을 비교하는 화면. 최대 5개 기록을 최신순 정렬하고, 기록이 없으면 EmptyState를 표시한다.",
+      "acceptance_criteria": [
+        "getRecords() 최신순(savedAt 내림차순) 정렬로 최대 5개 ListRow 표시, 각 연도·환급액 표기",
+        "2개 이상 기록 시 최근-직전 환급액 차이(증감)를 부호와 함께 표시",
+        "기록 없으면 EmptyState \"저장된 기록이 없어요\"+\"결과 저장하러 가기\"(→/result)"
+      ]
+    },
+    "covers": [
+      "F8-AC1",
+      "F8-AC2",
+      "F1-AC6"
+    ],
+    "files": [
+      "src/pages/Records.tsx"
+    ],
+    "definition_of_done": [
+      "ScreenScaffold+Top+FloatingTabBar, EmptyState 처리",
+      "금액 천단위 콤마·원 단위 표기",
+      "HEX 하드코딩 없음, tsc --noEmit 통과"
+    ],
+    "depends_on": [
+      "0006"
+    ],
+    "db_schema": "SavedRecord[] → taxback:records (최대 5개)",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": "Pattern: ComparisonList. TDS: Top, Card, ListRow, Amount(템플릿), Paragraph, Spacing, Button, EmptyState(템플릿), Asset.ContentIcon. Layout: <Top title=기록 & 비교/> → 최상단 비교 Card(2개 이상 시: 최근 vs 직전 환급액 차이 \"작년보다 +N원\") → SavedRecord 목록 ListRow(taxYear, refundAmount Amount 원, savedAt) 최신순 최대 5개. States: Empty=기록 없음→EmptyState title \"저장된 기록이 없어요\" action Button weak \"결과 저장하러 가기\"→/result. 금액 천단위 콤마. HEX 금지."
+  },
+  {
+    "id": "0014",
+    "title": "라우팅 & FloatingTabBar 배선",
+    "epic": "Epic 4: Integration",
+    "task": {
+      "description": "react-router-dom으로 6개 라우트(/, /result, /analysis, /simulate, /checklist, /records)를 App.tsx에 연결하고 FloatingTabBar(홈/체크리스트/기록) 탭 네비게이션을 배선한다. navigate state는 RouteState 타입 계약을 따른다. main.tsx는 수정하지 않는다.",
+      "acceptance_criteria": [
+        "6개 라우트 전부 정의·연결되어 각 경로 진입 시 해당 페이지 렌더",
+        "FloatingTabBar 홈/체크리스트/기록 탭이 각 라우트로 이동, 활성 탭 컬러 틴트",
+        "알 수 없는 경로는 / 로 리다이렉트, main.tsx 미수정(@AI:ANCHOR 보호)"
+      ]
+    },
+    "covers": [
+      "F2-AC1",
+      "F8-AC1"
+    ],
+    "files": [
+      "src/App.tsx"
+    ],
+    "definition_of_done": [
+      "모든 Route 정의·페이지 import 확인, tsc --noEmit 통과",
+      "FloatingTabBar 하단 고정 시 paddingBottom calc(Npx + env(safe-area-inset-bottom))",
+      "앱 빌드 성공, main.tsx 변경 없음"
+    ],
+    "depends_on": [
+      "0008",
+      "0009",
+      "0010",
+      "0011",
+      "0012",
+      "0013"
+    ],
+    "db_schema": "",
+    "api_contract": "",
+    "dependencies": [
+      "react-router-dom"
+    ],
+    "ui_requirements": "React Router BrowserRouter/Routes/Route 6개. FloatingTabBar(템플릿, 2~5탭) 홈(/)/체크리스트(/checklist)/기록(/records), 활성 탭 컬러 틴트. RouteState 타입으로 navigate state(전부 undefined). 하단 고정 요소 safe-area paddingBottom 필수."
+  },
+  {
+    "id": "0015",
+    "title": "광고 배치 & 전역 규정 감사",
+    "epic": "Epic 4: Integration",
+    "task": {
+      "description": "배너(AdSlot)를 결과·기록 화면 콘텐츠 사이에 비침투적으로 배치하고, 리워드(TossRewardAd) 게이팅 동작을 최종 점검한다. 외부 이탈·외부 SDK·HEX 하드코딩·참고용 고지 누락 등 전역 규정을 감사하고 폴리시한다.",
+      "acceptance_criteria": [
+        "AdSlot adGroupId=env가 결과 하단·기록 섹션 사이에 배치되어 콘텐츠와 겹치지 않음",
+        "전역 감사: window.location.href/window.open 외부 이탈 코드 부재, 외부 login/payment/ad SDK 부재, GA/Amplitude 부재",
+        "모든 결과 화면에 \"참고용 추정치\" 고지 존재, HEX 하드코딩 0건(var(--tds-color-*)/TDS만)"
+      ]
+    },
+    "covers": [
+      "F3-AC4",
+      "F2-AC8",
+      "F4-AC2"
+    ],
+    "files": [
+      "src/pages/Result.tsx",
+      "src/pages/Records.tsx",
+      "src/pages/Analysis.tsx"
+    ],
+    "definition_of_done": [
+      "배너 비침투 배치 확인, 리워드 게이팅 정상 동작",
+      "외부 이탈/외부 SDK/HEX 하드코딩 감사 통과",
+      "tsc --noEmit·앱 빌드 성공, 모바일 뷰포트(360~420px) 최적화 확인"
+    ],
+    "depends_on": [
+      "0014"
+    ],
+    "db_schema": "",
+    "api_contract": "",
+    "dependencies": [],
+    "ui_requirements": "AdSlot(템플릿, adGroupId=VITE_TOSS_AD_GROUP_ID)를 Result 결과 하단·Records 섹션 사이에 배치, 콘텐츠 비침투. TossRewardAd(slotId=VITE_TOSS_AD_SLOT_ID) 게이팅 최종 점검. 전역: 외부 이탈 코드·외부 SDK·HEX 하드코딩 제거, \"참고용 추정치\" 고지 상시. Spacing 컴포넌트로 광고 여백 조절."
+  },
+  {
+    "id": "0016",
+    "title": "라우팅 와이어링 + Provider 연결 + 통합 폴리시",
+    "epic": "4",
+    "task": {
+      "description": "App.tsx에 모든 페이지(Home.tsx, Result.tsx, Analysis.tsx, Simulate.tsx, Checklist.tsx, Records.tsx, Result.tsx, Records.tsx, Analysis.tsx) Route 연결, main.tsx 수정 금지(@AI:ANCHOR), 광고/결제 연동, 최종 UX 폴리시",
+      "acceptance_criteria": [
+        "App.tsx에 모든 페이지 Route가 정의되어 있다",
+        "모든 navigate() 대상에 Route가 존재한다",
+        "main.tsx의 TDSMobileAITProvider/BrowserRouter가 유지되어 있다",
+        "앱이 '/' 경로에서 정상 렌더링된다"
+      ]
+    },
+    "files": [
+      "src/App.tsx"
+    ],
+    "covers": [],
+    "definition_of_done": [
+      "typecheck pass",
+      "all routes accessible",
+      "no console errors"
+    ],
+    "depends_on": [
+      "0015"
+    ]
+  }
+]
