@@ -50,6 +50,7 @@ export default function Analysis() {
   const hasDeductions = result.breakdown.some((item) => item.appliedAmount > 0);
 
   const [adReady, setAdReady] = useState(false);
+  console.log('RENDER adReady=', adReady);
   const [unlocked, setUnlocked] = useState(false);
   const [showing, setShowing] = useState(false);
   const [toast, setToast] = useState({ open: false, text: '' });
@@ -74,6 +75,7 @@ export default function Analysis() {
   }, [hasDeductions]);
 
   function handleWatchAd() {
+    console.log('CLICK adReady=', adReady);
     if (!adReady) {
       setToast({ open: true, text: AD_LOAD_FAIL_TEXT });
       return;
