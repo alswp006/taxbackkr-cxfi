@@ -2,19 +2,12 @@ import { useState } from 'react';
 import { Top, Paragraph, Spacing, Badge, BottomSheet, ListRow } from '@toss/tds-mobile';
 import { generateHapticFeedback } from '@apps-in-toss/web-framework';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
-import { FloatingTabBar } from '@/components/FloatingTabBar';
 import { MiniBar } from '@/components/MiniBar';
 import { getDeductions } from '@/lib/storage';
 import { deriveChecklist } from '@/lib/checklist';
 import { DEDUCTION_TIPS } from '@/lib/constants';
 import { formatNumber } from '@/lib/utils';
 import type { ChecklistKey, Deductions } from '@/lib/types';
-
-const TAB_ITEMS = [
-  { label: '홈', path: '/' },
-  { label: '체크리스트', path: '/checklist' },
-  { label: '기록', path: '/records' },
-];
 
 /** ChecklistKey → Deductions 키 매핑 (팁 조회용, checklist.ts의 CHECKLIST_SOURCE와 동일) */
 const CHECKLIST_SOURCE: Record<ChecklistKey, keyof Deductions> = {
@@ -59,7 +52,6 @@ export default function Checklist() {
   return (
     <ScreenScaffold
       top={<Top title={<Top.TitleParagraph>절세 체크리스트</Top.TitleParagraph>} />}
-      bottom={<FloatingTabBar items={TAB_ITEMS} />}
     >
       <div data-testid="checklist-progress">
         <Paragraph.Text typography="t3">

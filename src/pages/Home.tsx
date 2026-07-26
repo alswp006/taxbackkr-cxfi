@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Top, Paragraph, Spacing, Chip, ChipItem, TextField, Button } from '@toss/tds-mobile';
 import { generateHapticFeedback } from '@apps-in-toss/web-framework';
 import { ScreenScaffold } from '../components/ScreenScaffold';
-import { FloatingTabBar } from '../components/FloatingTabBar';
 import { SeasonBanner } from '../components/SeasonBanner';
 import { getProfile, saveProfile } from '../lib/storage';
 import type { IncomeType } from '../lib/types';
@@ -79,15 +78,6 @@ export default function Home() {
   return (
     <ScreenScaffold
       top={<Top title={<Top.TitleParagraph>세금 환급 계산</Top.TitleParagraph>} />}
-      bottom={
-        <FloatingTabBar
-          items={[
-            { label: '홈', path: '/' },
-            { label: '체크리스트', path: '/checklist' },
-            { label: '기록', path: '/records' },
-          ]}
-        />
-      }
     >
       <SeasonBanner />
 

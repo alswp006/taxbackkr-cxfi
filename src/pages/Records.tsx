@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Top, Paragraph, Spacing, Button, ListRow } from '@toss/tds-mobile';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
-import { FloatingTabBar } from '@/components/FloatingTabBar';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/StateView';
 import { Amount } from '@/components/Amount';
@@ -12,12 +11,6 @@ import { formatNumber } from '@/lib/utils';
 
 const AD_GROUP_ID = import.meta.env.VITE_TOSS_AD_GROUP_ID ?? 'records-section';
 
-const TAB_ITEMS = [
-  { label: '홈', path: '/' },
-  { label: '체크리스트', path: '/checklist' },
-  { label: '기록', path: '/records' },
-];
-
 const MAX_DISPLAY = 5;
 
 export default function Records() {
@@ -27,7 +20,6 @@ export default function Records() {
   return (
     <ScreenScaffold
       top={<Top title={<Top.TitleParagraph>기록 & 비교</Top.TitleParagraph>} />}
-      bottom={<FloatingTabBar items={TAB_ITEMS} />}
     >
       {records.length === 0 ? (
         <EmptyState
