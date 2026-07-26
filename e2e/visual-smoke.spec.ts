@@ -12,14 +12,23 @@ import { test, expect, type Page } from "@playwright/test";
  */
 const ROUTES: { path: string; name: string }[] = [
   { path: "/", name: "home" },
-  // { path: "/result", name: "result" },   // ← 이 앱의 라우트를 추가
-  // { path: "/settings", name: "settings" },
+  { path: "/checklist", name: "checklist" },
 ];
 
 /** 데이터가 필요한 화면용 localStorage 시드(앱에 맞게 채워라). 앱 스크립트보다 먼저 실행된다. */
 async function seed(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    // window.localStorage.setItem("MY_STORAGE_KEY", JSON.stringify({ /* ... */ }));
+    window.localStorage.setItem(
+      "taxback:deductions",
+      JSON.stringify({
+        creditCard: 3000000,
+        medical: 7000000,
+        education: 0,
+        irp: 9000000,
+        insurance: 0,
+        donation: 0,
+      }),
+    );
   });
 }
 
