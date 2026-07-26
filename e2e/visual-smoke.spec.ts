@@ -13,6 +13,7 @@ import { test, expect, type Page } from "@playwright/test";
 const ROUTES: { path: string; name: string }[] = [
   { path: "/", name: "home" },
   { path: "/checklist", name: "checklist" },
+  { path: "/records", name: "records" },
 ];
 
 /** 데이터가 필요한 화면용 localStorage 시드(앱에 맞게 채워라). 앱 스크립트보다 먼저 실행된다. */
@@ -28,6 +29,59 @@ async function seed(page: Page): Promise<void> {
         insurance: 0,
         donation: 0,
       }),
+    );
+    const baseProfile = {
+      id: "profile-seed",
+      taxYear: 2025,
+      incomeType: "employee",
+      annualSalary: 50000000,
+      freelanceIncome: 0,
+      dependents: 0,
+      updatedAt: 0,
+    };
+    const baseResult = {
+      taxableIncome: 40000000,
+      calculatedTax: 3000000,
+      prepaidTax: 4200000,
+      refundAmount: 1200000,
+      breakdown: [],
+      needsGlobalFiling: false,
+      computedAt: 0,
+    };
+    window.localStorage.setItem(
+      "taxback:records",
+      JSON.stringify([
+        {
+          id: "record-2024",
+          taxYear: 2024,
+          profile: { ...baseProfile, taxYear: 2024 },
+          deductions: {
+            creditCard: 0,
+            medical: 0,
+            education: 0,
+            irp: 0,
+            insurance: 0,
+            donation: 0,
+          },
+          result: { ...baseResult, refundAmount: 900000 },
+          savedAt: 2000,
+        },
+        {
+          id: "record-2025",
+          taxYear: 2025,
+          profile: baseProfile,
+          deductions: {
+            creditCard: 3000000,
+            medical: 7000000,
+            education: 0,
+            irp: 9000000,
+            insurance: 0,
+            donation: 0,
+          },
+          result: baseResult,
+          savedAt: 3000,
+        },
+      ]),
     );
   });
 }
