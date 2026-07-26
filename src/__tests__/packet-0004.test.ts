@@ -11,16 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Deductions, ChecklistState } from '@/lib/types';
 import { CHECKLIST_DEFAULTS, DEDUCTION_LIMITS } from '@/lib/constants';
-
-/**
- * Mock function signature — actual implementation will be in src/lib/checklist.ts
- * function deriveChecklist(deductions: Deductions, storedChecklist?: ChecklistState): ChecklistState
- */
-function deriveChecklist(deductions: Deductions, storedChecklist?: ChecklistState): ChecklistState {
-  // This is a placeholder — the actual implementation will be provided by the Coder
-  // For test-first, we just expect the function to exist and have this signature
-  throw new Error('deriveChecklist not yet implemented');
-}
+import { deriveChecklist } from '@/lib/checklist';
 
 describe('deriveChecklist — 체크리스트 파생 로직', () => {
   // ============================================================================
