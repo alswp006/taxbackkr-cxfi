@@ -19,7 +19,7 @@ const DEDUCTION_LABELS: Record<keyof Deductions, string> = {
   donation: '기부금 세액공제',
 };
 
-/** NaN/Infinity를 0으로 보정 (console.error 없이 조용히 degrade) */
+/** NaN/Infinity를 0으로 보정 */
 function safeNumber(n: number): number {
   return Number.isFinite(n) ? n : 0;
 }
