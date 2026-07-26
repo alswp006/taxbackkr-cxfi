@@ -6,6 +6,7 @@ import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/StateView';
 import { Amount } from '@/components/Amount';
 import { AdSlot } from '@/components/AdSlot';
+import { Sparkline } from '@/components/Sparkline';
 import { getRecords } from '@/lib/storage';
 import { formatNumber } from '@/lib/utils';
 
@@ -59,6 +60,27 @@ export default function Records() {
             })()}
 
           <Spacing size={16} />
+
+          {records.length >= 2 && (
+            <>
+              <Sparkline
+                testId="trend-chart"
+                data={[...records]
+                  .sort((a, b) => a.taxYear - b.taxYear)
+                  .map((record) => record.result.refundAmount)}
+              />
+              <Spacing size={16} />
+            </>
+          )}
+
+          {records.length === 1 && (
+            <>
+              <Paragraph.Text typography="st13">
+                비교하려면 다음 해 기록이 필요해요
+              </Paragraph.Text>
+              <Spacing size={16} />
+            </>
+          )}
 
           <AdSlot adGroupId={AD_GROUP_ID} />
 

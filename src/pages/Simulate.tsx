@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Top, Paragraph, Spacing, Button, ListRow, Toast } from '@toss/tds-mobile';
 import { generateHapticFeedback } from '@apps-in-toss/web-framework';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { FloatingTabBar } from '@/components/FloatingTabBar';
 import { SummaryHero } from '@/components/SummaryHero';
+import { Card } from '@/components/Card';
 import { Amount } from '@/components/Amount';
+import { EmptyState } from '@/components/StateView';
 import { getProfile, getDeductions, saveDeductions } from '@/lib/storage';
 import { calcTax } from '@/lib/calc';
 import { formatNumber } from '@/lib/utils';
@@ -56,8 +59,10 @@ function fireHaptic(type: 'success' | 'tickWeak') {
 }
 
 export default function Simulate() {
+  const navigate = useNavigate();
   const profile = getProfile() ?? FALLBACK_PROFILE;
   const initialDeductions = getDeductions() ?? FALLBACK_DEDUCTIONS;
+  const hasIncome = profile.annualSalary > 0 || profile.freelanceIncome > 0;
 
   // draft: 슬라이더 즉시 표시값. debounced: calcTax 재계산에 쓰이는 지연 반영값.
   const [draft, setDraft] = useState<Deductions>(initialDeductions);
@@ -83,6 +88,26 @@ export default function Simulate() {
     setToast({ open: true, text: '공제 내역을 저장했어요' });
   }
 
+  if (!hasIncome) {
+    return (
+      <ScreenScaffold
+        top={<Top title={<Top.TitleParagraph>공제 시뮬레이션</Top.TitleParagraph>} />}
+        bottom={<FloatingTabBar items={TAB_ITEMS} />}
+      >
+        <EmptyState
+          title="소득을 먼저 입력해주세요"
+          description="총급여나 사업소득을 입력하면 공제 조정에 따른 환급액을 계산해드려요"
+          action={
+            <Button variant="weak" onClick={() => navigate('/')}>
+              입력하러 가기
+            </Button>
+          }
+        />
+        <Spacing size={80} />
+      </ScreenScaffold>
+    );
+  }
+
   return (
     <ScreenScaffold
       top={<Top title={<Top.TitleParagraph>공제 시뮬레이션</Top.TitleParagraph>} />}
@@ -96,32 +121,34 @@ export default function Simulate() {
 
       <Spacing size={16} />
 
-      {SLIDER_ITEMS.map(({ key, label }) => (
-        <div key={key}>
-          <ListRow
-            contents={
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Paragraph.Text typography="st1">{label}</Paragraph.Text>
-                  <Paragraph.Text typography="st1">{formatNumber(draft[key])}원</Paragraph.Text>
+      <Card>
+        {SLIDER_ITEMS.map(({ key, label }, i) => (
+          <div key={key}>
+            <ListRow
+              contents={
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <Paragraph.Text typography="st1">{label}</Paragraph.Text>
+                    <Paragraph.Text typography="st1">{formatNumber(draft[key])}원</Paragraph.Text>
+                  </div>
+                  <input
+                    type="range"
+                    data-testid={`deduction-slider-${key}`}
+                    aria-label={`${label} 슬라이더`}
+                    min={0}
+                    max={DEDUCTION_MAX}
+                    step={10000}
+                    value={draft[key]}
+                    onChange={(e) => handleSliderChange(key, Number(e.target.value))}
+                    style={{ width: '100%', accentColor: 'var(--adaptiveBlue500)' }}
+                  />
                 </div>
-                <input
-                  type="range"
-                  data-testid={`deduction-slider-${key}`}
-                  aria-label={`${label} 슬라이더`}
-                  min={0}
-                  max={DEDUCTION_MAX}
-                  step={10000}
-                  value={draft[key]}
-                  onChange={(e) => handleSliderChange(key, Number(e.target.value))}
-                  style={{ width: '100%', accentColor: 'var(--adaptiveBlue500)' }}
-                />
-              </div>
-            }
-          />
-          <Spacing size={8} />
-        </div>
-      ))}
+              }
+            />
+            {i < SLIDER_ITEMS.length - 1 && <Spacing size={8} />}
+          </div>
+        ))}
+      </Card>
 
       <Spacing size={16} />
 
