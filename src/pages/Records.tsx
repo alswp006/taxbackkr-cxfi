@@ -1,12 +1,13 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Top, Paragraph, Spacing, Button, ListRow } from '@toss/tds-mobile';
+import { Top, Paragraph, Spacing, Button, ListRow, AlertDialog, Toast } from '@toss/tds-mobile';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/StateView';
 import { Amount } from '@/components/Amount';
 import { AdSlot } from '@/components/AdSlot';
 import { Sparkline } from '@/components/Sparkline';
-import { getRecords } from '@/lib/storage';
+import { getRecords, deleteRecord } from '@/lib/storage';
 import { formatNumber } from '@/lib/utils';
 
 const AD_GROUP_ID = import.meta.env.VITE_TOSS_AD_GROUP_ID ?? 'records-section';
@@ -15,7 +16,18 @@ const MAX_DISPLAY = 5;
 
 export default function Records() {
   const navigate = useNavigate();
-  const records = [...getRecords()].sort((a, b) => b.savedAt - a.savedAt).slice(0, MAX_DISPLAY);
+  const [allRecords, setAllRecords] = useState(() => getRecords());
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+  const [toast, setToast] = useState({ open: false, text: '' });
+  const records = [...allRecords].sort((a, b) => b.savedAt - a.savedAt).slice(0, MAX_DISPLAY);
+
+  function handleConfirmDelete() {
+    if (!deleteTargetId) return;
+    deleteRecord(deleteTargetId);
+    setAllRecords((prev) => prev.filter((record) => record.id !== deleteTargetId));
+    setDeleteTargetId(null);
+    setToast({ open: true, text: '기록을 삭제했어요' });
+  }
 
   return (
     <ScreenScaffold
@@ -90,6 +102,16 @@ export default function Records() {
                       bottom={<Amount value={record.result.refundAmount} unit="원" typography="st1" />}
                     />
                   }
+                  right={
+                    <Button
+                      variant="weak"
+                      size="small"
+                      aria-label={`${record.taxYear}년 기록 삭제`}
+                      onClick={() => setDeleteTargetId(record.id)}
+                    >
+                      삭제
+                    </Button>
+                  }
                 />
                 {i < records.length - 1 && <Spacing size={4} />}
               </div>
@@ -99,6 +121,21 @@ export default function Records() {
       )}
 
       <Spacing size={80} />
+
+      <AlertDialog
+        open={deleteTargetId !== null}
+        title="삭제할까요?"
+        description="삭제한 기록은 되돌릴 수 없어요"
+        alertButton={<AlertDialog.AlertButton onClick={handleConfirmDelete}>삭제</AlertDialog.AlertButton>}
+        onClose={() => setDeleteTargetId(null)}
+      />
+
+      <Toast
+        open={toast.open}
+        text={toast.text}
+        position="bottom"
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+      />
     </ScreenScaffold>
   );
 }

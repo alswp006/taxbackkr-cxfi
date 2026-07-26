@@ -168,6 +168,9 @@ export interface ChecklistState {
     Simulate.tsx
     __DebugAd.tsx
     __TdsGallery.tsx
+  providers/
+    AppProviders.tsx
+  routes.tsx
   styles/
     globals.css
     reward-ad.css
@@ -207,8 +210,8 @@ export interface ChecklistState {
   lib/checklist.ts → imports: lib/types, lib/constants
   lib/constants.ts → imports: lib/types
   pages/Analysis.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/Card, components/MiniBar, components/StateView, lib/storage, lib/calc, lib/utils, lib/types
-  pages/Checklist.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/MiniBar, lib/storage, lib/checklist, lib/constants, lib/utils, lib/types
-  pages/Records.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/Card, components/StateView, components/Amount, components/AdSlot, components/Sparkline, lib/storage, lib/utils
+  pages/Checklist.tsx → imports: components/ScreenScaffold, components/MiniBar, lib/storage, lib/checklist, lib/constants, lib/utils, lib/types
+  pages/Records.tsx → imports: components/ScreenScaffold, components/Card, components/StateView, components/Amount, components/AdSlot, components/Sparkline, lib/storage, lib/utils
   pages/Simulate.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/SummaryHero, components/Card, components/Amount, components/StateView, lib/storage, lib/calc, lib/utils, lib/types
 CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.
 
@@ -216,13 +219,13 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0002: localStorage CRUD 헬퍼 (files: src/lib/storage.ts)
 - 0003: 계산 엔진 (calcTax + checkGlobalFiling) (files: src/lib/calc.ts)
 - 0004: 체크리스트 파생 로직 (files: src/lib/checklist.ts)
+- 0005: 소득·결과 서비스 훅 (useTaxData) (files: src/hooks/useTaxData.ts)
+- 0006: 체크리스트·기록 서비스 훅 (files: src/hooks/useChecklistData.ts, src/hooks/useRecords.ts)
 - 0008: 홈 / 소득 입력 페이지 (`/`) (files: src/pages/Home.tsx)
 - 0009: 결과 페이지 (`/result`) + 종소세 판정 (files: src/pages/Result.tsx)
 - 0011: 공제 시뮬레이션 페이지 (`/simulate`) (files: src/pages/Simulate.tsx)
 - 0012: 절세 체크리스트 페이지 (`/checklist`) (files: src/pages/Checklist.tsx)
 - 0013: 기록 & 비교 페이지 (`/records`) (files: src/pages/Records.tsx)
 - 0015: 광고 배치 & 전역 규정 감사 (files: src/pages/Result.tsx, src/pages/Records.tsx, src/pages/Analysis.tsx)
-- 0005: 소득·결과 서비스 훅 (useTaxData) (files: src/hooks/useTaxData.ts)
-- 0006: 체크리스트·기록 서비스 훅 (files: src/hooks/useChecklistData.ts, src/hooks/useRecords.ts)
-- heal-1-02: 기반 타입·상수(0001) 및 서비스 훅(0005·0006) 완결로 Provider 데이터 소스 확보 (files: src/types/index.ts, src/constants/tax.ts, src/hooks/useTaxData.ts, src/hooks/useChecklistData.ts)
 - heal-1-01: 앱 루트 단일화: Router + 전역 Provider 1회 마운트 (files: src/main.tsx, src/App.tsx, src/routes.tsx, src/providers/AppProviders.tsx)
+- heal-1-02: 기반 타입·상수(0001) 및 서비스 훅(0005·0006) 완결로 Provider 데이터 소스 확보 (files: src/types/index.ts, src/constants/tax.ts, src/hooks/useTaxData.ts, src/hooks/useChecklistData.ts)

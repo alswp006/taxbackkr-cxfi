@@ -126,6 +126,11 @@ export function saveRecord(record: SavedRecord): boolean {
   return trySetItem(KEYS.records, next);
 }
 
+export function deleteRecord(id: string): boolean {
+  const next = getRecords().filter((record) => record.id !== id);
+  return trySetItem(KEYS.records, next);
+}
+
 export function getMeta(): AppMeta | null {
   return getItem<AppMeta>(KEYS.meta) ?? defaultMeta();
 }
