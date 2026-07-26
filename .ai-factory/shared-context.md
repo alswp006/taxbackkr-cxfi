@@ -225,3 +225,4 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0005: 소득·결과 서비스 훅 (useTaxData) (files: src/hooks/useTaxData.ts)
 - 0006: 체크리스트·기록 서비스 훅 (files: src/hooks/useChecklistData.ts, src/hooks/useRecords.ts)
 - heal-1-02: 기반 타입·상수(0001) 및 서비스 훅(0005·0006) 완결로 Provider 데이터 소스 확보 (files: src/types/index.ts, src/constants/tax.ts, src/hooks/useTaxData.ts, src/hooks/useChecklistData.ts)
+- heal-1-01: 앱 루트 단일화: Router + 전역 Provider 1회 마운트 (files: src/main.tsx, src/App.tsx, src/routes.tsx, src/providers/AppProviders.tsx)
