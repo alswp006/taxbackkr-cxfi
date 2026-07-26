@@ -187,3 +187,4 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 
 ## Already Implemented (do NOT duplicate or overwrite)
 - 0002: localStorage CRUD 헬퍼 (files: src/lib/storage.ts)
+- 0003: 계산 엔진 (calcTax + checkGlobalFiling) (files: src/lib/calc.ts)
