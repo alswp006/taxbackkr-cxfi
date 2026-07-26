@@ -142,11 +142,15 @@ export interface ChecklistState {
     Sparkline.tsx
     StateView.tsx
     SummaryHero.tsx
+    TaxDataProvider.tsx
     TossPurchase.tsx
     TossRewardAd.tsx
     __ProbeNav.tsx
     __ProbeNavSdk.tsx
+  constants/
   hooks/
+    useChecklistData.ts
+    useTaxData.ts
   lib/
     calc.ts
     checklist.ts
@@ -192,6 +196,7 @@ export interface ChecklistState {
 - Sparkline.tsx: Sparkline
 - StateView.tsx: EmptyState, LoadingState
 - SummaryHero.tsx: SummaryHero
+- TaxDataProvider.tsx: TaxDataProvider, useTaxContext
 - TossPurchase.tsx: TossPurchase
 - TossRewardAd.tsx: TossRewardAd
 - __ProbeNav.tsx: ProbeNav
@@ -219,3 +224,4 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0015: 광고 배치 & 전역 규정 감사 (files: src/pages/Result.tsx, src/pages/Records.tsx, src/pages/Analysis.tsx)
 - 0005: 소득·결과 서비스 훅 (useTaxData) (files: src/hooks/useTaxData.ts)
 - 0006: 체크리스트·기록 서비스 훅 (files: src/hooks/useChecklistData.ts, src/hooks/useRecords.ts)
+- heal-1-02: 기반 타입·상수(0001) 및 서비스 훅(0005·0006) 완결로 Provider 데이터 소스 확보 (files: src/types/index.ts, src/constants/tax.ts, src/hooks/useTaxData.ts, src/hooks/useChecklistData.ts)
