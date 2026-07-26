@@ -122,14 +122,9 @@ export function mockTds() {
         ),
     ),
 
+    // title is usually <Top.TitleParagraph> (already an <h1>) — render as-is, don't re-wrap.
     Top: Object.assign(
-      ({ children, title }: any) =>
-        React.createElement(
-          "nav",
-          { role: "navigation" },
-          title && React.createElement("h1", null, title),
-          children,
-        ),
+      ({ children, title }: any) => React.createElement("nav", { role: "navigation" }, title, children),
       {
         TitleParagraph: ({ children }: any) => React.createElement("h1", null, children),
       },
@@ -146,12 +141,19 @@ export function mockTds() {
       { Header: ({ children }: any) => React.createElement("div", null, children) },
     ),
 
-    Chip: ({ children, selected, onClick }: any) =>
+    // Chip = container (renders its ChipItem children), ChipItem = the pressable chip itself.
+    Chip: ({ children, ...props }: any) =>
+      React.createElement("div", { role: "group", ...props }, children),
+
+    ChipItem: ({ children, selected, onClick, disabled }: any) =>
       React.createElement(
         "button",
-        { role: "button", "aria-pressed": selected, onClick },
+        { type: "button", "aria-pressed": selected, onClick, disabled },
         children,
       ),
+
+    FixedBottomCTA: ({ children, onClick, disabled }: any) =>
+      React.createElement("button", { onClick, disabled }, children),
 
     Switch: ({ checked, onChange }: any) =>
       React.createElement("input", { type: "checkbox", checked, onChange, role: "switch" }),
