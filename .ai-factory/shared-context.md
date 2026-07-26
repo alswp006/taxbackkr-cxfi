@@ -184,3 +184,6 @@ export interface ChecklistState {
 ### Module Dependencies (import graph)
   lib/constants.ts → imports: lib/types
 CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.
+
+## Already Implemented (do NOT duplicate or overwrite)
+- 0002: localStorage CRUD 헬퍼 (files: src/lib/storage.ts)
