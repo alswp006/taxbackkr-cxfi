@@ -190,3 +190,4 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0003: 계산 엔진 (calcTax + checkGlobalFiling) (files: src/lib/calc.ts)
 - 0004: 체크리스트 파생 로직 (files: src/lib/checklist.ts)
 - 0008: 홈 / 소득 입력 페이지 (`/`) (files: src/pages/Home.tsx)
+- 0009: 결과 페이지 (`/result`) + 종소세 판정 (files: src/pages/Result.tsx)
