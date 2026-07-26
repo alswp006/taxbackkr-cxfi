@@ -194,3 +194,4 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0011: 공제 시뮬레이션 페이지 (`/simulate`) (files: src/pages/Simulate.tsx)
 - 0012: 절세 체크리스트 페이지 (`/checklist`) (files: src/pages/Checklist.tsx)
 - 0013: 기록 & 비교 페이지 (`/records`) (files: src/pages/Records.tsx)
+- 0015: 광고 배치 & 전역 규정 감사 (files: src/pages/Result.tsx, src/pages/Records.tsx, src/pages/Analysis.tsx)
