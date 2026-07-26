@@ -1,3 +1,8 @@
+# Shared Context (auto-generated — do NOT modify)
+
+
+## Shared Types Contract (IMPORT these, do NOT redefine)
+```typescript
 /**
  * TaxBackKR Type Definitions (Packet 0001)
  *
@@ -116,52 +121,66 @@ export interface ChecklistItem {
  * @property updatedAt - 마지막 수정 시각 (epoch ms)
  */
 export interface ChecklistState {
-  items: ChecklistItem[];
-  achievedCount: number;
-  totalCount: number;
-  updatedAt: number;
-}
+  items: ChecklistItem[
+// ...truncated
+```
 
-/**
- * 연도별 저장 스냅샷 (비교/기록용)
- * @property id - UUID
- * @property taxYear - 귀속연도
- * @property profile - 저장당시 TaxProfile 스냅샷
- * @property deductions - 저장당시 Deductions 스냅샷
- * @property result - 저장당시 TaxResult 스냅샷
- * @property savedAt - 저장 시각 (epoch ms)
- */
-export interface SavedRecord {
-  id: string;
-  taxYear: number;
-  profile: TaxProfile;
-  deductions: Deductions;
-  result: TaxResult;
-  savedAt: number;
-}
+## Existing Codebase (import and use these — do NOT recreate)
+### File Tree (src/)
+  App.tsx
+  components/
+    AdSlot.tsx
+    Amount.tsx
+    BottomCTA.tsx
+    Card.tsx
+    CountUp.tsx
+    FloatingTabBar.tsx
+    MiniBar.tsx
+    PageShell.tsx
+    ScreenScaffold.tsx
+    Sparkline.tsx
+    StateView.tsx
+    SummaryHero.tsx
+    TossPurchase.tsx
+    TossRewardAd.tsx
+  hooks/
+  lib/
+    constants.ts
+    storage.ts
+    types.ts
+    utils.ts
+  main.tsx
+  pages/
+    Home.tsx
+    __TdsGallery.tsx
+  styles/
+    globals.css
+    reward-ad.css
+  types/
+  vite-env.d.ts
 
-/**
- * 앱 메타/플래그
- * @property disclaimerAcknowledged - 참고용 추정 고지 확인 여부
- * @property lastVisitAt - 마지막 방문 시각 (epoch ms)
- * @property seasonBannerDismissedYear - 시즌 배너를 닫은 연도 (null이면 미표시)
- */
-export interface AppMeta {
-  disclaimerAcknowledged: boolean;
-  lastVisitAt: number;
-  seasonBannerDismissedYear: number | null;
-}
+### Exports (src/lib/)
+- constants.ts: export interface TaxBracket; export const TAX_BRACKETS: TaxBracket[] = [; export const DEDUCTION_LIMITS: Record<keyof Deductions, number> =; export const CHECKLIST_DEFAULTS: ChecklistItem[] = [; export const DEDUCTION_TIPS: Record<keyof Deductions, string> =
+- storage.ts: export function getItem<T>(key: string): T | null; export function setItem<T>(key: string, value: T): void; export function removeItem(key: string): void
+- types.ts: export type IncomeType = 'employee' | 'freelancer' | 'multi'; export interface TaxProfile; export interface Deductions; export interface DeductionBreakdownItem; export interface TaxResult; export type ChecklistKey = 'irp' | 'pension' | 'medical' | 'creditCard' | 'donation' | 'housing'; export interface ChecklistItem; export interface ChecklistState
+- utils.ts: export function cn(...classes: (string | boolean | undefined | null)[]): string; export function formatNumber(n: number): string; export function formatCurrency(n: number, currency = 'KRW'): string
 
-/**
- * 라우트별 location.state 타입 계약
- * 모든 라우트 (/, /result, /analysis, /simulate, /checklist, /records)에서 state = undefined
- * (화면 간 데이터는 전부 localStorage 경유 — location.state에 실려오지 않음)
- */
-export type RouteState = {
-  '/': undefined;
-  '/result': undefined;
-  '/analysis': undefined;
-  '/simulate': undefined;
-  '/checklist': undefined;
-  '/records': undefined;
-};
+### Components (src/components/)
+- AdSlot.tsx: AdSlot
+- Amount.tsx: Amount
+- BottomCTA.tsx: SubmitFooter, ButtonStack
+- Card.tsx: Card
+- CountUp.tsx: CountUp
+- FloatingTabBar.tsx: FloatingTabBar
+- MiniBar.tsx: MiniBar
+- PageShell.tsx: PageShell
+- ScreenScaffold.tsx: ScreenScaffold
+- Sparkline.tsx: Sparkline
+- StateView.tsx: EmptyState, LoadingState
+- SummaryHero.tsx: SummaryHero
+- TossPurchase.tsx: TossPurchase
+- TossRewardAd.tsx: TossRewardAd
+
+### Module Dependencies (import graph)
+  lib/constants.ts → imports: lib/types
+CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.

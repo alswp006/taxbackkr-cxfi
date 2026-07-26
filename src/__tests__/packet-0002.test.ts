@@ -208,8 +208,11 @@ describe('Packet-0002: localStorage CRUD 헬퍼', () => {
       const { saveRecord } = await import('@/lib/storage');
 
       // Mock localStorage.setItem to throw QuotaExceededError
-      const originalSetItem = localStorage.setItem;
-      localStorage.setItem = vi.fn(() => {
+      // (jsdom's Storage is a WebIDL legacy platform object — plain assignment
+      // to `localStorage.setItem` doesn't shadow the method, it's silently
+      // absorbed as a bogus stored key. Patching Storage.prototype is required
+      // for the mock to actually be observed by real setItem() calls.)
+      const setItemSpy = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
         const error = new Error("QuotaExceededError");
         error.name = "QuotaExceededError";
         throw error;
@@ -250,8 +253,7 @@ describe('Packet-0002: localStorage CRUD 헬퍼', () => {
       const result = saveRecord(record);
       expect(result).toBe(false);
 
-      // Restore original setItem
-      localStorage.setItem = originalSetItem;
+      setItemSpy.mockRestore();
     });
 
     it('AC-3.3: should allow saving up to 5 records without removal', async () => {
