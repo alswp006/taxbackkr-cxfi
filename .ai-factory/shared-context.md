@@ -138,20 +138,31 @@ export interface ChecklistState {
     MiniBar.tsx
     PageShell.tsx
     ScreenScaffold.tsx
+    SeasonBanner.tsx
     Sparkline.tsx
     StateView.tsx
     SummaryHero.tsx
     TossPurchase.tsx
     TossRewardAd.tsx
+    __ProbeNav.tsx
+    __ProbeNavSdk.tsx
   hooks/
   lib/
+    calc.ts
+    checklist.ts
     constants.ts
     storage.ts
     types.ts
     utils.ts
   main.tsx
   pages/
+    Analysis.tsx
+    Checklist.tsx
     Home.tsx
+    Records.tsx
+    Result.tsx
+    Simulate.tsx
+    __DebugAd.tsx
     __TdsGallery.tsx
   styles/
     globals.css
@@ -160,8 +171,10 @@ export interface ChecklistState {
   vite-env.d.ts
 
 ### Exports (src/lib/)
+- calc.ts: export function calcTax(profile: TaxProfile, deductions: Deductions): TaxResult; export function checkGlobalFiling(profile: TaxProfile): boolean; export function getGlobalFilingReason(profile: TaxProfile): string
+- checklist.ts: export function deriveChecklist(deductions: Deductions, storedChecklist?: ChecklistState): ChecklistState
 - constants.ts: export interface TaxBracket; export const TAX_BRACKETS: TaxBracket[] = [; export const DEDUCTION_LIMITS: Record<keyof Deductions, number> =; export const CHECKLIST_DEFAULTS: ChecklistItem[] = [; export const DEDUCTION_TIPS: Record<keyof Deductions, string> =
-- storage.ts: export function getItem<T>(key: string): T | null; export function setItem<T>(key: string, value: T): void; export function removeItem(key: string): void
+- storage.ts: export function getItem<T>(key: string): T | null; export function setItem<T>(key: string, value: T): void; export function removeItem(key: string): void; export function getProfile(): TaxProfile | null; export function saveProfile(profile: TaxProfile): boolean; export function getDeductions(): Deductions | null; export function saveDeductions(deductions: Deductions): boolean; export function getChecklist(): ChecklistState | null
 - types.ts: export type IncomeType = 'employee' | 'freelancer' | 'multi'; export interface TaxProfile; export interface Deductions; export interface DeductionBreakdownItem; export interface TaxResult; export type ChecklistKey = 'irp' | 'pension' | 'medical' | 'creditCard' | 'donation' | 'housing'; export interface ChecklistItem; export interface ChecklistState
 - utils.ts: export function cn(...classes: (string | boolean | undefined | null)[]): string; export function formatNumber(n: number): string; export function formatCurrency(n: number, currency = 'KRW'): string
 
@@ -175,14 +188,23 @@ export interface ChecklistState {
 - MiniBar.tsx: MiniBar
 - PageShell.tsx: PageShell
 - ScreenScaffold.tsx: ScreenScaffold
+- SeasonBanner.tsx: SeasonBanner
 - Sparkline.tsx: Sparkline
 - StateView.tsx: EmptyState, LoadingState
 - SummaryHero.tsx: SummaryHero
 - TossPurchase.tsx: TossPurchase
 - TossRewardAd.tsx: TossRewardAd
+- __ProbeNav.tsx: ProbeNav
+- __ProbeNavSdk.tsx: ProbeNavSdk
 
 ### Module Dependencies (import graph)
+  lib/calc.ts → imports: lib/types, lib/constants
+  lib/checklist.ts → imports: lib/types, lib/constants
   lib/constants.ts → imports: lib/types
+  pages/Analysis.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/Card, components/MiniBar, components/StateView, lib/storage, lib/calc, lib/utils, lib/types
+  pages/Checklist.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/MiniBar, lib/storage, lib/checklist, lib/constants, lib/utils, lib/types
+  pages/Records.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/Card, components/StateView, components/Amount, components/AdSlot, components/Sparkline, lib/storage, lib/utils
+  pages/Simulate.tsx → imports: components/ScreenScaffold, components/FloatingTabBar, components/SummaryHero, components/Card, components/Amount, components/StateView, lib/storage, lib/calc, lib/utils, lib/types
 CRITICAL: Before creating any new function, type, or component, check the list above. If something similar exists, import and use it.
 
 ## Already Implemented (do NOT duplicate or overwrite)
@@ -195,3 +217,5 @@ CRITICAL: Before creating any new function, type, or component, check the list a
 - 0012: 절세 체크리스트 페이지 (`/checklist`) (files: src/pages/Checklist.tsx)
 - 0013: 기록 & 비교 페이지 (`/records`) (files: src/pages/Records.tsx)
 - 0015: 광고 배치 & 전역 규정 감사 (files: src/pages/Result.tsx, src/pages/Records.tsx, src/pages/Analysis.tsx)
+- 0005: 소득·결과 서비스 훅 (useTaxData) (files: src/hooks/useTaxData.ts)
+- 0006: 체크리스트·기록 서비스 훅 (files: src/hooks/useChecklistData.ts, src/hooks/useRecords.ts)
