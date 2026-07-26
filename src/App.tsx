@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import Home from './pages/Home';
 import Result from './pages/Result';
@@ -33,6 +33,8 @@ export default function App() {
           }
         />
       )}
+      {/* 알 수 없는 경로는 홈으로 리다이렉트 (replace로 히스토리 오염 방지) */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

@@ -18,6 +18,14 @@ import { vi } from "vitest";
 export const mockNavigate = vi.fn();
 export const mockLocation = { pathname: "/", search: "", state: null, key: "default" };
 
+// vitest hoists every `vi.mock()` — including the one inside `mockRouter()` below —
+// to the top of this module, so it registers the moment ANY test imports this file
+// (e.g. just for `mockTds`/`mockAppsInToss`). Without this gate that leak would replace
+// react-router's useNavigate/useLocation with no-op stubs even in tests that want the
+// REAL router (e.g. routing integration tests), silently breaking navigation.
+// The factory therefore delegates to the actual hooks unless `mockRouter()` was called.
+let __routerMockActive = false;
+
 // ── TDS (@toss/tds-mobile) ──
 // TDS components use CSS-in-JS + layout hooks that crash in jsdom.
 // Replace with lightweight DOM stand-ins that preserve prop-based testing.
@@ -306,17 +314,21 @@ export function mockTossRewardAd() {
 // ── react-router-dom ──
 // Preserve actual router + override useNavigate for assertion.
 export function mockRouter() {
-  vi.mock("react-router-dom", async () => {
-    const actual = await vi.importActual<typeof import("react-router-dom")>(
-      "react-router-dom",
-    );
-    return {
-      ...actual,
-      useNavigate: () => mockNavigate,
-      useLocation: () => mockLocation,
-    };
-  });
+  __routerMockActive = true;
 }
+
+// Registered once (hoisted) on import, but stays inert until `mockRouter()` flips the
+// flag — so importing this helper for other mocks does not clobber the real router.
+vi.mock("react-router-dom", async () => {
+  const actual = await vi.importActual<typeof import("react-router-dom")>(
+    "react-router-dom",
+  );
+  return {
+    ...actual,
+    useNavigate: () => (__routerMockActive ? mockNavigate : actual.useNavigate()),
+    useLocation: () => (__routerMockActive ? mockLocation : actual.useLocation()),
+  };
+});
 
 // ── Convenience: mock everything ──
 export function mockAll() {

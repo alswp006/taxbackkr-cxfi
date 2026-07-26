@@ -21,6 +21,10 @@ export type TabItem = {
 export function FloatingTabBar({ items }: { items: TabItem[] }) {
   const navigate = useNavigate();
   const location = useLocation();
+  if (typeof process !== "undefined" && process.env.DEBUG_TABBAR) {
+    // eslint-disable-next-line no-console
+    console.log("[FloatingTabBar] location.pathname=", location.pathname, "items=", items.map((i) => i.path));
+  }
 
   return (
     <nav
