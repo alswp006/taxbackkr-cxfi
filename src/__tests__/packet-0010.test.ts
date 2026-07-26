@@ -1,40 +1,24 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { fireEvent, screen, within } from "@testing-library/react";
-import { mockTds, mockRouter, mockNavigate } from "@/__tests__/__helpers__/mocks";
+import { mockTds, mockAppsInToss, mockRouter, mockNavigate } from "@/__tests__/__helpers__/mocks";
 import { renderWithRouter, seedLocalStorage } from "@/__tests__/__helpers__/test-utils";
+import { loadFullScreenAd, showFullScreenAd } from "@apps-in-toss/web-framework";
 import type { TaxProfile, Deductions } from "@/lib/types";
 
+// NOTE: mocks.ts hoists every vi.mock() it declares (including the one inside
+// mockAppsInToss()) the moment this file imports ANYTHING from it — so a second,
+// competing `vi.mock("@apps-in-toss/web-framework", ...)` declared locally here would
+// silently lose to that hoisted registration. Call mockAppsInToss() to opt in, then
+// control its already-mocked loadFullScreenAd/showFullScreenAd via vi.mocked() below.
 mockTds();
+mockAppsInToss();
 mockRouter();
 
-// ── @apps-in-toss/web-framework — controllable per-test (not the default auto-succeed mock) ──
-// Names must start with "mock" so vitest can hoist them alongside vi.mock().
-const mockLoadFullScreenAd = vi.fn((opts: { onEvent?: (e: any) => void; onError?: (e: any) => void }) => {
-  opts.onEvent?.({ type: "loaded" });
-});
-const mockShowFullScreenAd = vi.fn((opts: { onEvent?: (e: any) => void; onError?: (e: any) => void }) => {
-  opts.onEvent?.({ type: "rewarded" });
-});
-
-vi.mock("@apps-in-toss/web-framework", () => ({
-  loadFullScreenAd: (opts: any) => mockLoadFullScreenAd(opts),
-  showFullScreenAd: (opts: any) => mockShowFullScreenAd(opts),
-  generateHapticFeedback: vi.fn(),
-  Storage: {
-    setItem: vi.fn(async () => {}),
-    getItem: vi.fn(async () => null),
-    removeItem: vi.fn(async () => {}),
-  },
-  Analytics: {
-    screen: vi.fn(async () => {}),
-    click: vi.fn(async () => {}),
-    impression: vi.fn(async () => {}),
-  },
-}));
-
-// Analysis.tsx는 아직 생성되지 않음 — TDD red phase 예상 동작
 import Analysis from "@/pages/Analysis";
+
+const mockLoadFullScreenAd = vi.mocked(loadFullScreenAd);
+const mockShowFullScreenAd = vi.mocked(showFullScreenAd);
 
 function makeProfile(overrides: Partial<TaxProfile> = {}): TaxProfile {
   return {

@@ -50,24 +50,19 @@ export default function Analysis() {
   const hasDeductions = result.breakdown.some((item) => item.appliedAmount > 0);
 
   const [adReady, setAdReady] = useState(false);
-  console.log('RENDER adReady=', adReady);
   const [unlocked, setUnlocked] = useState(false);
   const [showing, setShowing] = useState(false);
   const [toast, setToast] = useState({ open: false, text: '' });
 
   useEffect(() => {
-    console.log('EFFECT RUN', hasDeductions);
     if (!hasDeductions) return;
-    console.log('typeof loadFullScreenAd', typeof loadFullScreenAd, loadFullScreenAd.name, loadFullScreenAd.toString().slice(0, 200));
     try {
       loadFullScreenAd({
         slotId: AD_SLOT_ID,
         onEvent: () => setAdReady(true),
         onError: () => setAdReady(false),
       } as Parameters<typeof loadFullScreenAd>[0]);
-      console.log('CALLED OK');
-    } catch (e) {
-      console.log('CATCH', e);
+    } catch {
       // SDK 미제공 환경(개발 브라우저 등) — 광고 없이 진행 못 하므로 준비 안 됨 상태 유지
       setAdReady(false);
     }
@@ -75,7 +70,6 @@ export default function Analysis() {
   }, [hasDeductions]);
 
   function handleWatchAd() {
-    console.log('CLICK adReady=', adReady);
     if (!adReady) {
       setToast({ open: true, text: AD_LOAD_FAIL_TEXT });
       return;

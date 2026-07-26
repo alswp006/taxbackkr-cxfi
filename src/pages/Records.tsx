@@ -5,8 +5,11 @@ import { FloatingTabBar } from '@/components/FloatingTabBar';
 import { Card } from '@/components/Card';
 import { EmptyState } from '@/components/StateView';
 import { Amount } from '@/components/Amount';
+import { AdSlot } from '@/components/AdSlot';
 import { getRecords } from '@/lib/storage';
 import { formatNumber } from '@/lib/utils';
+
+const AD_GROUP_ID = import.meta.env.VITE_TOSS_AD_GROUP_ID ?? 'records-section';
 
 const TAB_ITEMS = [
   { label: '홈', path: '/' },
@@ -54,6 +57,10 @@ export default function Records() {
                 </Card>
               );
             })()}
+
+          <Spacing size={16} />
+
+          <AdSlot adGroupId={AD_GROUP_ID} />
 
           <Spacing size={16} />
 

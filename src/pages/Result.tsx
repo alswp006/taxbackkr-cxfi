@@ -8,10 +8,13 @@ import { SummaryHero } from '../components/SummaryHero';
 import { Card } from '../components/Card';
 import { CountUp } from '../components/CountUp';
 import { EmptyState } from '../components/StateView';
+import { AdSlot } from '../components/AdSlot';
 import { getProfile, getDeductions, saveRecord } from '../lib/storage';
 import { calcTax, getGlobalFilingReason } from '../lib/calc';
 import { formatNumber } from '../lib/utils';
 import type { Deductions, TaxProfile } from '../lib/types';
+
+const AD_GROUP_ID = import.meta.env.VITE_TOSS_AD_GROUP_ID ?? 'result-bottom';
 
 const TAB_ITEMS = [
   { label: '홈', path: '/' },
@@ -147,6 +150,10 @@ export default function Result() {
           }
         />
       </Card>
+
+      <Spacing size={16} />
+
+      <AdSlot adGroupId={AD_GROUP_ID} />
 
       <Spacing size={16} />
 
